@@ -13,7 +13,7 @@ build:
   stage: build
   script:
     - npm install
-    - npm run coverage
+    - npm test
   coverage: '/Branches\s*:\s*(\d*\.?\d+)%/'
   artifacts:
     paths:
