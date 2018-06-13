@@ -23,7 +23,7 @@ build:
       - coverage/
 
 dependency_scanning:
-  image: briangweber/docker-node:carnon
+  image: briangweber/docker-node:carbon
   stage: build
   allow_failure: true
   services:
