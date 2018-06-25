@@ -23,6 +23,8 @@ stages:
   - deploy
 
 before_script:
+  - mkdir -p ~/.m2
+  - echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><servers><server><username>${CT_ARTIFACTORY_USERNAME}</username><password>${CT_ARTIFACTORY_PASSWORD}</password><id>libs-release-local</id></server></servers></settings>" > ~/.m2/settings.xml
   - export PACKAGE_VERSION=${CI_COMMIT_SHA:0:7}
 
 maven_build:
