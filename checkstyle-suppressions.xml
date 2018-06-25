@@ -10,4 +10,5 @@
     <suppress checks="AbbreviationAsWordInName" files=".*"/>
     <suppress checks="LocalVariableName" files=".*"/>
     <suppress checks="JavadocMethod" files=".*"/>
+    <suppress checks="AvoidStarImport" files=".*"/>
 </suppressions>
