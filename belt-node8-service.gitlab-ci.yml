@@ -1,5 +1,8 @@
 image: briangweber/node:8
 
+variables:
+  DEFAULT_BRANCH: develop
+
 before_script:
   - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
   - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
@@ -44,7 +47,7 @@ publish:
   script:
     - grunt bundle --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
-    - develop
+    - $DEFAULT_BRANCH
   except:
     - schedules
 
@@ -55,7 +58,7 @@ deploy-cit:
   script:
     - grunt deploy --environment=cit --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
-    - develop
+    - $DEFAULT_BRANCH
   except:
     - schedules
 
@@ -66,7 +69,7 @@ deploy-int:
   script:
     - grunt deploy --environment=int --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
-    - develop
+    - $DEFAULT_BRANCH
   except:
     - schedules
 
@@ -78,6 +81,6 @@ deploy-prd:
     - grunt deploy --environment=prd --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   when: manual
   only:
-    - develop
+    - $DEFAULT_BRANCH
   except:
     - schedules
