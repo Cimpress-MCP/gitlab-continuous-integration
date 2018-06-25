@@ -58,7 +58,8 @@ push_bundle:
   image: briangweber/docker-node:carbon
   stage: bundle
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
   script:
@@ -72,7 +73,8 @@ deploy_cit:
   image: briangweber/node:8
   stage: validate
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
   environment:
@@ -88,7 +90,8 @@ deploy_int:
   image: briangweber/node:8
   stage: integration
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
   environment:
@@ -105,7 +108,8 @@ deploy_prd:
   stage: deploy
   when: manual
   only:
-    - $DEFAULT_BRANCH
+    variables:
+       - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
   environment:
