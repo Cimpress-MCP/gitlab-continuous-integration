@@ -47,7 +47,8 @@ publish:
   script:
     - grunt bundle --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
 
@@ -58,7 +59,8 @@ deploy-cit:
   script:
     - grunt deploy --environment=cit --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
 
@@ -69,7 +71,8 @@ deploy-int:
   script:
     - grunt deploy --environment=int --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
 
@@ -81,6 +84,7 @@ deploy-prd:
     - grunt deploy --environment=prd --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   when: manual
   only:
-    - $DEFAULT_BRANCH
+    variables:
+      - $CI_COMMIT_REF_NAME == $DEFAULT_BRANCH
   except:
     - schedules
