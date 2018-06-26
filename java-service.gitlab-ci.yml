@@ -67,51 +67,34 @@ push_bundle:
     - npm ci
     - 'grunt bundle --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
-deploy_cit:
+.deploy_template: &deploy_definiton
   image: briangweber/node:8
-  stage: validate
   only:
     - master
   except:
     - schedules
+  script:
+    - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
+    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
+    - npm i -g grunt
+    - npm ci
+    - 'grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
+
+deploy_cit:
+  <<: *deploy_definiton
+  stage: validate
   environment:
     name: cit
-  script:
-    - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
-    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-    - npm i -g grunt
-    - npm ci
-    - 'grunt deploy --environment=cit --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
 deploy_int:
-  image: briangweber/node:8
+  <<: *deploy_definiton
   stage: integration
-  only:
-    - master
-  except:
-    - schedules
   environment:
     name: int
-  script:
-    - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
-    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-    - npm i -g grunt
-    - npm ci
-    - 'grunt deploy --environment=int --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
 deploy_prd:
-  image: briangweber/node:8
+  <<: *deploy_definiton
   stage: deploy
   when: manual
-  only:
-    - master
-  except:
-    - schedules
   environment:
     name: production
-  script:
-    - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
-    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-    - npm i -g grunt
-    - npm ci
-    - 'grunt deploy --environment=prd --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
