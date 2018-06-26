@@ -80,12 +80,6 @@ push_bundle:
     - npm ci
     - 'grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
-deploy_cit:
-  <<: *deploy_definiton
-  stage: validate
-  environment:
-    name: cit
-
 deploy_int:
   <<: *deploy_definiton
   stage: integration
