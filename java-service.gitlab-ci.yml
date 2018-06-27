@@ -14,6 +14,7 @@ cache:
     - .m2/repository
     - node_modules/
     - target/*.jar
+    - target/*.tgz
 
 stages:
   - build
