@@ -91,4 +91,4 @@ deploy_prd:
   stage: deploy
   when: manual
   environment:
-    name: production
+    name: prd
