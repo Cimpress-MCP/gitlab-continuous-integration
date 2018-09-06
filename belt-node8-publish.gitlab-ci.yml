@@ -3,7 +3,6 @@ image: node:8
 before_script:
   - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
   - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-  - export VERSION=${CI_COMMIT_SHA:0:7}
 
 stages:
   - build
