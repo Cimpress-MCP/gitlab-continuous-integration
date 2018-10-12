@@ -9,7 +9,6 @@ before_script:
 
 stages:
   - build
-  - validate
   - publish
   - deploy
 
