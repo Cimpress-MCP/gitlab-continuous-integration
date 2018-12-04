@@ -1,0 +1,47 @@
+image: node:10
+
+before_script:
+  - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
+  - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
+  - export VERSION=${CI_COMMIT_SHA:0:7}
+
+stages:
+  - build
+  - publish
+
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm test
+  coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
+  artifacts:
+    paths:
+      - coverage/
+
+dependency_scanning:
+  image: briangweber/docker-node:10
+  stage: build
+  allow_failure: true
+  services:
+    - docker:stable-dind
+  script:
+    - export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
+    - docker run
+        --env DEP_SCAN_DISABLE_REMOTE_CHECKS="${DEP_SCAN_DISABLE_REMOTE_CHECKS:-false}"
+        --volume "$PWD:/code"
+        --volume /var/run/docker.sock:/var/run/docker.sock
+        "registry.gitlab.com/gitlab-org/security-products/dependency-scanning:$SP_VERSION" /code
+  artifacts:
+    paths: [gl-dependency-scanning-report.json]
+
+publish:
+  stage: publish
+  script:
+    - npm config set @cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/
+    - npm i @cimpress-technology/version-bumper -g
+    - bump-version
+    - add-keywords "${DEFAULT_KEYWORDS}"
+    - npm publish
+  only:
+    - master
