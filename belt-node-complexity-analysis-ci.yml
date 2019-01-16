@@ -6,7 +6,7 @@ analyze:
     - npm i @cimpress-technology/s3sync -g
     - npm i plato -g
     - s3sync -b ${BUILD_ARTIFACT_BUCKET} -l plato -p ${CI_PROJECT_NAME}/plato -a download
-    - plato -l .eslintrc.json  -r -d plato src
+    - plato -e .eslintrc.json  -r -d plato src
     - s3sync -b ${BUILD_ARTIFACT_BUCKET} -l plato -p ${CI_PROJECT_NAME}/plato -a upload
   only:
     - master
