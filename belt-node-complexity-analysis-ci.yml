@@ -1,0 +1,12 @@
+analyze:
+  stage: build
+  allow_failure: true
+  script:
+    - npm config set @cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/
+    - npm i @cimpress-technology/s3sync -g
+    - npm i plato -g
+    - s3sync -b ${BUILD_ARTIFACT_BUCKET} -l plato -p ${CI_PROJECT_NAME}/plato -a download
+    - plato -l .eslintrc.json  -r -d plato src
+    - s3sync -b ${BUILD_ARTIFACT_BUCKET} -l plato -p ${CI_PROJECT_NAME}/plato -a upload
+  only:
+    - master
