@@ -1,0 +1,36 @@
+#Using this will require buildcomponents.yaml  
+
+
+before_script:
+  - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
+  - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
+  - npm i -g grunt
+  - npm ci
+  - export VERSION=${CI_COMMIT_SHA:0:7}
+
+publish:
+  image: briangweber/docker-node:carbon
+  stage: publish
+  script:
+    - grunt bundle --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
+  only:
+    - master
+  except:
+    - schedules
+
+deploy-int:
+  extends: .deploy
+  stage: deploy-int
+  variables:
+    DEPLOYENV: int
+  environment:
+    name: integration  
+
+deploy-prd:
+  extends: .deploy
+  stage: deploy-prd
+  variables:
+    DEPLOYENV: prd
+  environment:
+    name: production  
+  when: manual  
