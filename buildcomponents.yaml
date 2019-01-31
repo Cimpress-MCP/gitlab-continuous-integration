@@ -1,4 +1,5 @@
 .migrate:
+  image: kevinrambaud/node-flyway:8-5.1.4-alpine
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD migrate

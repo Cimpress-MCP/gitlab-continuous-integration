@@ -1,11 +1,10 @@
-# using this will require buildcomponents.yaml 
+#To use this you will need buildcomponents.yaml in your top level ci file. 
 
 build:
-  image: kevinrambaud/node-flyway:8-5.1.4-alpine
   extends: .migrate
   stage: build
   services:
-    - postgres:10.6-alpine
+    - $POSTGRES_VERSION
   after_script:
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
@@ -13,6 +12,7 @@ build:
     paths:
       - coverage/
   variables:
+    POSTGRES_VERSION: postgres:10.6-alpine
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
     POSTGRES_SERVER: postgres
