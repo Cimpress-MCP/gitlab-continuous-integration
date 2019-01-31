@@ -1,8 +1,4 @@
 #To use this you will need buildcomponents.yaml in your top level ci file. 
-
-
-
-
 publish:
   image: briangweber/docker-node:carbon
   stage: publish
