@@ -1,3 +1,5 @@
+#Used for setting up a node service pipeline
+
 before_script:
   - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
   - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc

@@ -1,4 +1,5 @@
-#To use this you will need buildcomponents.yaml in your top level ci file. 
+#Using this will require deploycomponents.yaml  
+
 publish:
   image: briangweber/docker-node:carbon
   stage: publish
@@ -13,15 +14,11 @@ deploy-int:
   extends: .deploy
   stage: deploy-int
   variables:
-    DEPLOYENV: int
-  environment:
-    name: integration  
+    CI_ENVIRONMENT_NAME: integration
 
 deploy-prd:
   extends: .deploy
   stage: deploy-prd
   variables:
-    DEPLOYENV: prd
-  environment:
-    name: production  
+    CI_ENVIRONMENT_NAME: production
   when: manual  
