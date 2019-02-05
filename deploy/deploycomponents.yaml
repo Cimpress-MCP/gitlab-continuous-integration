@@ -10,5 +10,3 @@
     - grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
     - master
-  except:
-    - schedules

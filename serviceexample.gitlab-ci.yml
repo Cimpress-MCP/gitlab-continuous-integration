@@ -1,0 +1,1 @@
+include: https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/belt-node8-service.gitlab-ci.yml

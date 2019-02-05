@@ -1,0 +1,45 @@
+include: 
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/belt-node-complexity-analysis-ci.yml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/deploy/deploycomponents.yaml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/deploy/beanstalkdeploy.yaml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/setup/nodesetup.yaml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/service/dependencyscanning.yaml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/databasae/builddatabase.yaml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/databasae/stages.yaml
+
+build:myDataBaseService:
+  extends: .buildDatabaseWithNpm
+  variables:
+    POSTGRES_VERSION: postgres:10.6-alpine
+    POSTGRES_DB: postgres
+    POSTGRES_USER: postgres
+    POSTGRES_SERVER: postgres
+    POSTGRES_PASSWORD: ''
+
+migrate-int:
+  extends: .migrate
+  stage: migrate-int
+  only:
+    - master
+  except:
+    - schedules
+  variables:
+    POSTGRES_SERVER: myDatabaseServerAddress.com
+    POSTGRES_USER: postgres
+    POSTGRES_DB: baton
+    POSTGRES_PASSWORD: $INT_DB_PASSWORD
+
+migrate-prd:
+  extends: .migrate
+  stage: migrate-prd
+  when: manual
+  only:
+    - master
+  except:
+    - schedules
+  variables:
+    POSTGRES_VERSION: postgres:10.6-alpine 
+    POSTGRES_SERVER: myDatabaseServerAddress.com
+    POSTGRES_USER: postgres
+    POSTGRES_DB: baton
+    POSTGRES_PASSWORD: $PRD_DB_PASSWORD
