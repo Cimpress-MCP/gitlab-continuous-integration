@@ -1,6 +1,5 @@
 #Base components for setting up a deploy configuration. 
 
-
 .migrate:
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/

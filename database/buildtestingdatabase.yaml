@@ -1,7 +1,7 @@
 #Used for extending build with this for services that use a databases. 
 
 #Using this will require deploycomponents.yaml  
-.buildDatabaseWithNpm:
+.buildTestingDatabaseWithNpm:
   image: kevinrambaud/node-flyway:8-5.1.4-alpine
   stage: build  
   script:

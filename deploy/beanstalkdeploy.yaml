@@ -1,3 +1,4 @@
+#deploy components for Bean stalk deployment. 
 #Using this will require deploycomponents.yaml  
 
 publish:
