@@ -6,4 +6,4 @@ stages:
   - migrate-int
   - deploy-int
   - migrate-prd
-  - deploy-prd
+  - deploy-prd-after-db

@@ -1,19 +1,26 @@
 include: 
+    # Basic node service ci core 
   - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/belt-node-complexity-analysis-ci.yml
+    # Reusable components for deployment and/or data migration. 
   - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/deploy/deploycomponents.yaml
-  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/deploy/beanstalkdeploy.yaml
+    # Will automatically run setup scripts for building, testing and deploying node based software and services.
   - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/setup/nodesetup.yaml
+    # Includes the basic stages of a database service build. 
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/database/stages.yaml
+    # Allows for the use of .buildDatabaseWithNpm to extend your build with database support 
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/database/builddatabase.yaml
+    # Sets up a pipeline targeted for elastic beanstalk deployment. 
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/deploy/beanstalkdeploy.yaml
+    # Will scan your dependencies for volunerabilities. 
   - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/service/dependencyscanning.yaml
-  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/databasae/builddatabase.yaml
-  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/databasae/stages.yaml
 
-build:myDataBaseService:
-  extends: .buildDatabaseWithNpm
+build:myDatabaseService:
+  extends: .testNodeApplicationWithDatabase
   variables:
     POSTGRES_VERSION: postgres:10.6-alpine
-    POSTGRES_DB: postgres
-    POSTGRES_USER: postgres
-    POSTGRES_SERVER: postgres
+    POSTGRES_DB: myDbName
+    POSTGRES_USER: myDBUser
+    POSTGRES_SERVER: MyDbService
     POSTGRES_PASSWORD: ''
 
 migrate-int:
@@ -24,10 +31,11 @@ migrate-int:
   except:
     - schedules
   variables:
+    CI_ENVIRONMENT_NAME: integration
     POSTGRES_SERVER: myDatabaseServerAddress.com
-    POSTGRES_USER: postgres
-    POSTGRES_DB: baton
-    POSTGRES_PASSWORD: $INT_DB_PASSWORD
+    POSTGRES_USER: myDBUser
+    POSTGRES_DB: MyDbService
+    POSTGRES_PASSWORD: $INT_DB_PASSWORD # $INT_DB_PASSWORD needs to be set in git lab varables 
 
 migrate-prd:
   extends: .migrate
@@ -38,8 +46,8 @@ migrate-prd:
   except:
     - schedules
   variables:
-    POSTGRES_VERSION: postgres:10.6-alpine 
+    CI_ENVIRONMENT_NAME: production
     POSTGRES_SERVER: myDatabaseServerAddress.com
-    POSTGRES_USER: postgres
-    POSTGRES_DB: baton
-    POSTGRES_PASSWORD: $PRD_DB_PASSWORD
+    POSTGRES_USER: myDBUser
+    POSTGRES_DB: MyDbService
+    POSTGRES_PASSWORD: $PRD_DB_PASSWORD # $PRD_DB_PASSWORD needs to be set in git lab varables 

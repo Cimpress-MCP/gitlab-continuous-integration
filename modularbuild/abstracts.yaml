@@ -1,0 +1,35 @@
+#Base components for setting up a deploy configuration. 
+
+.migrate:
+  image: briangweber/docker-node:carbon
+  script:
+    - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
+    - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=$CI_ENVIRONMENT_NAME migrate
+
+.deploy:
+  script:
+    - grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
+  only:
+    - master
+
+.node: 
+  before_script:
+    - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
+    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
+    - npm i -g grunt
+    - npm ci
+ 
+.testNodeApplicationWithDatabase:
+  extends: .node
+  image: kevinrambaud/node-flyway:8-5.1.4-alpine
+  stage: build  
+  script:
+    - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
+    - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=$DEPLOYENV migrate
+    - npm test
+  coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
+  artifacts:
+    paths:
+      - coverage/
+  services:
+    - $POSTGRES_VERSION

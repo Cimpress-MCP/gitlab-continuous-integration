@@ -1,4 +1,4 @@
-#deploy components for Bean stalk deployment. 
+#deploy components for elastic beanstalk deployment. 
 #Using this will require deploycomponents.yaml  
 
 publish:
@@ -20,6 +20,13 @@ deploy-int:
 deploy-prd:
   extends: .deploy
   stage: deploy-prd
+  when: manual
   variables:
     CI_ENVIRONMENT_NAME: production
-  when: manual  
+
+deploy-prd-auto:
+  extends: .deploy
+  stage: deploy-prd-AfterDb
+  when: on_sucess 
+  variables:
+    CI_ENVIRONMENT_NAME: production
