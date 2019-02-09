@@ -13,8 +13,6 @@ cache:
   paths:
     - .m2/repository
     - node_modules/
-    - target/*.jar
-    - target/*.tgz
 
 stages:
   - build
@@ -36,6 +34,8 @@ maven_build:
     - 'mvn $MAVEN_CLI_OPTS package'
   except:
     - schedules
+  artifacts:
+    paths: [target]
 
 dependency_scanning:
   image: docker:stable
@@ -61,6 +61,7 @@ push_bundle:
     - master
   except:
     - schedules
+  dependencies: [maven_build]
   script:
     - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
     - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
