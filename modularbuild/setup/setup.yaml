@@ -1,4 +1,0 @@
-#Used for setting up a node service pipeline
-
-before_script:
-  - export VERSION=${CI_COMMIT_SHA:0:7}

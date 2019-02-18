@@ -1,0 +1,14 @@
+include: 
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/belt-node-complexity-analysis-ci.yml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/base-ci-resource.yaml
+  
+variables:
+   PLATFORM: "node"  # What platform is your project/service
+   
+stages:
+  - build
+  - publish
+  - deploy-int
+  - deploy-prd
+
+

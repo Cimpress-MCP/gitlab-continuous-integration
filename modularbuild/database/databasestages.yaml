@@ -1,9 +1,0 @@
-#stages for building a database service. 
-
-stages:
-  - build
-  - publish
-  - migrate-int
-  - deploy-int
-  - migrate-prd
-  - deploy-prd-after-db
