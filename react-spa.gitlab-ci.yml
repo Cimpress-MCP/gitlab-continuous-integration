@@ -39,7 +39,7 @@ build-rev:
   except:
     - master
   environment:
-    name: review
+    name: review-$CI_COMMIT_REF_SLUG
   script:
     - export NODE_ENV="production"
     - npm run clean
@@ -88,7 +88,7 @@ deploy-rev:
     DOMAIN_NAME:
     S3_DEST: s3://int-$BUCKET_SUFFIX/review/$CI_COMMIT_REF_SLUG/
   environment:
-    name: review
+    name: review-$CI_COMMIT_REF_SLUG
     url: https://$DOMAIN_NAME/review/$CI_COMMIT_REF_SLUG/index.html
   dependencies:
     - build-rev
