@@ -1,4 +1,6 @@
 #---shared requirements of git lab ci jobs and stages---
+
+#base compoenets of postgres migration jobs 
 .migrate:
   image: kevinrambaud/node-flyway:8-5.1.4-alpine
   script:
@@ -115,11 +117,13 @@ migrate-postgres-int:
       - $INT_POSTGRES_SERVER 
   except:
     - schedules
+  environment:
+    name: int
   variables:
     POSTGRES_SERVER: $INT_POSTGRES_SERVER
     POSTGRES_USER: $INT_POSTGRES_USER
     POSTGRES_DB: $INT_POSTGRES_DB
-    # found in gitlab settings
+    # Password should be set in your gitlab ci/cd settings 
     POSTGRES_PASSWORD: $INT_DB_PASSWORD
 
 # Deploys service to int autmatically after migrate-int stage completes sucessfully 
@@ -145,11 +149,13 @@ migrate-postgres-prd:
   except:
     - schedules
   allow_failure: false
+  environment:
+    name: int
   variables:
     POSTGRES_SERVER: $PRD_POSTGRES_SERVER
     POSTGRES_USER: $PRD_POSTGRES_USER
     POSTGRES_DB: $PRD_POSTGRES_DB
-    # found in gitlab settings
+    # Password should be set in your gitlab ci/cd settings 
     POSTGRES_PASSWORD: $PRD_DB_PASSWORD
 
 # Manual Job to being deployment of node service to production 
