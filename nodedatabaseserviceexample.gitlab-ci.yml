@@ -1,0 +1,25 @@
+include: 
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/belt-node-complexity-analysis-ci.yml
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/base-ci-resource.yaml
+  
+variables:
+   PLATFORM: "node"  # What platform is your project/service
+   POSTGRES_VERSION: "postgres:10.6-alpine" #In this database example here is what we are using 
+   NODEPOSTGRESAPP: "true" # Due to git lab having conditional logic diffculties mark ture if it is both node and postgres
+   INT_POSTGRES_SERVER: "int-mysserveraddress.nom" # integratoin database address
+   INT_POSTGRES_USER: int-user # int username 
+   INT_POSTGRES_DB: myDb # int database name
+   PRD_POSTGRES_SERVER: "prd-serveraddress.nom" # prod database address
+   PRD_POSTGRES_USER: prd-user # prd user name  
+   PRD_POSTGRES_DB: myDb # prod database name 
+   
+# stages must be defined manually, migrations are needed for database services 
+stages:
+  - build
+  - publish
+  - migrate-int
+  - deploy-int
+  - migrate-prd
+  - deploy-prd
+
+
