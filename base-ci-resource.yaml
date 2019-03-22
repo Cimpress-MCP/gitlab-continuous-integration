@@ -1,3 +1,12 @@
+stages:
+  - build
+  - publish
+  - migrate-int
+  - deploy-int
+  - deploy-gate
+  - migrate-prd
+  - deploy-prd
+
 #---shared requirements of git lab ci jobs and stages---
 
 #base compoenets of postgres migration jobs 
@@ -68,6 +77,24 @@ testNodeApplicationUsingPostgres:
     POSTGRES_SERVER: postgres
     POSTGRES_PASSWORD: ''
 
+analyze:
+  image: briangweber/docker-node:carbon
+  extends: .node
+  stage: build
+  allow_failure: true
+  script:
+    - npm config set @cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/
+    - npm i @cimpress-technology/s3sync -g
+    - npm i plato -g
+    - s3sync -b ${BUILD_ARTIFACT_BUCKET} -l plato -p ${CI_PROJECT_NAME}/plato -a download
+    - plato -e .eslintrc.json  -r -d plato src
+    - s3sync -b ${BUILD_ARTIFACT_BUCKET} -l plato -p ${CI_PROJECT_NAME}/plato -a upload
+  only:
+    refs:
+      - master
+    variables:
+      - $BUILD_ARTIFACT_BUCKET
+
 # for node applications will scan your dependencies for issues at build time. 
 dependency_scanning:
   extends: .node
@@ -136,21 +163,32 @@ deploy-int:
   environment:
     name: int
 
-# Manual Job to being deployment of node postgres service to production by first migrating the Database 
+# Provides a manual gate to initiate a production deployment
+deploy-prd-gate:
+  stage: deploy-gate
+  when: manual
+  environment:
+    name: prd
+  allow_failure: false
+  script:
+    - echo "beginning deployment"
+  only:
+    refs:
+      - master
+
+# Job for deployment of node postgres service to production by first migrating the database 
 migrate-postgres-prd:
   extends: .migrate
   stage: migrate-prd
-  when: manual
   only:
     refs:
       - master
     variables: 
-      - $POSTGRES_SERVER 
+      - $PRD_POSTGRES_SERVER 
   except:
     - schedules
-  allow_failure: false
   environment:
-    name: int
+    name: prd
   variables:
     POSTGRES_SERVER: $PRD_POSTGRES_SERVER
     POSTGRES_USER: $PRD_POSTGRES_USER
@@ -158,7 +196,7 @@ migrate-postgres-prd:
     # Password should be set in your gitlab ci/cd settings 
     POSTGRES_PASSWORD: $PRD_DB_PASSWORD
 
-# Manual Job to being deployment of node service to production 
+# Job for the deployment of node service to production 
 deploy-prd:
   extends: .deploy
   stage: deploy-prd
@@ -171,28 +209,4 @@ deploy-prd:
     - schedules
   environment:
     name: prd
-  when: manual
-
-# Job to deploy a node postgres service to production automatically upon sucessful completion of prd-migrate stage. 
-deploy-prd-auto:
-  extends: .deploy
-  stage: deploy-prd
-  only:
-    refs:
-      - master
-    variables: 
-      - $POSTGRES_VERSION #if defined will auto deploy after migration job is triggered. 
   when: on_success
-  except:
-    - schedules
-  environment:
-    name: prd
-  dependencies:
-    - migrate-postgres-prd
-
-
-
- 
-
-
-
