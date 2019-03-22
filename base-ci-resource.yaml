@@ -203,8 +203,6 @@ deploy-prd:
   only:
     refs:
       - master
-    variables: 
-      - $POSTGRES_VERSION == null #if this is null user will need to manually click the deploy button for prod 
   except:
     - schedules
   environment:
