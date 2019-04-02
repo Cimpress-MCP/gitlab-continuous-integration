@@ -3,6 +3,7 @@ stages:
   - publish
   - migrate-int
   - deploy-int
+  - system-tests
   - deploy-gate
   - migrate-prd
   - deploy-prd
