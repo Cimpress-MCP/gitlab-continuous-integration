@@ -50,9 +50,9 @@ maven-build:
   extends: .java
   image: maven:3.5.0-jdk-8-alpine
   stage: build
-    only:
-      variables:
-        - $PLATFORM == "java"
+  only:
+    variables:
+      - $PLATFORM == "java"
   script:
     - 'mvn clean versions:set -DnewVersion=$PACKAGE_VERSION'
     - 'mvn $MAVEN_CLI_OPTS package'
