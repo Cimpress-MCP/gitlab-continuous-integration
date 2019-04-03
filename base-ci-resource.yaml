@@ -26,6 +26,12 @@ stages:
     - npm i -g grunt
     - npm ci
 
+# Base components of jobs that use java
+.java:
+  before_script:
+    - mkdir -p ~/.m2
+    - echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><servers><server><username>${CT_ARTIFACTORY_USERNAME}</username><password>${CT_ARTIFACTORY_PASSWORD}</password><id>libs-release-local</id></server></servers></settings>" > ~/.m2/settings.xml
+
 #Base components for setting up a deploy configuration. 
 .deploy:
   image: briangweber/docker-node:carbon
@@ -38,6 +44,22 @@ before_script:
   - export VERSION=${CI_COMMIT_SHA:0:7}
 
 #---Build and testing jobs---#
+
+# If project is a a java application, it must be built with maven
+maven-build:
+  extends: .java
+  image: maven:3.5.0-jdk-8-alpine
+  stage: build
+    only:
+      variables:
+        - $PLATFORM == "java"
+  script:
+    - 'mvn clean versions:set -DnewVersion=$PACKAGE_VERSION'
+    - 'mvn $MAVEN_CLI_OPTS package'
+  except:
+    - schedules
+  artifacts:
+    paths: [target]
 
 # If project is not a node app it will use this job configuration for build and testing 
 testNodeApplication:
