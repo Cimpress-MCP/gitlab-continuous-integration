@@ -1,4 +1,5 @@
 stages:
+  - migrate-dev
   - build
   - publish
   - migrate-int
@@ -155,6 +156,24 @@ publish:
     - schedules
 
 #---Migration and Deploy Jobs---
+
+# Sets up dev database for local testing
+migrate-postgres-dev:
+  extends: .migrate
+  stage: migrate-dev
+  only:
+    variables: 
+      - $DEV_POSTGRES_SERVER 
+  except:
+    - schedules
+  environment:
+    name: dev
+  variables:
+    POSTGRES_SERVER: $DEV_POSTGRES_SERVER
+    POSTGRES_USER: $DEV_POSTGRES_USER
+    POSTGRES_DB: $DEV_POSTGRES_DB
+    # Password should be set in your gitlab ci/cd settings 
+    POSTGRES_PASSWORD: $DEV_DB_PASSWORD
 
 # In database applicaitons/services preforms the migrations job required before deployment in int
 # triggers automatically after publish. 
