@@ -69,8 +69,10 @@ testNodeApplication:
   stage: build  
   only:
     variables:       
-      - $NODEPOSTGRESAPP == null  
-      - $PLATFORM == "node"
+      - $NODEPOSTGRESAPP == null
+  except:
+    variables:
+      - $PLATFORM == "java"  
   script:
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
