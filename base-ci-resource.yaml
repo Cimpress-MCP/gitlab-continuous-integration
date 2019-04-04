@@ -1,4 +1,5 @@
 stages:
+  - migrate-dev
   - build
   - publish
   - migrate-int
@@ -26,6 +27,12 @@ stages:
     - npm i -g grunt
     - npm ci
 
+# Base components of jobs that use java
+.java:
+  before_script:
+    - mkdir -p ~/.m2
+    - echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><servers><server><username>${CT_ARTIFACTORY_USERNAME}</username><password>${CT_ARTIFACTORY_PASSWORD}</password><id>libs-release-local</id></server></servers></settings>" > ~/.m2/settings.xml
+
 #Base components for setting up a deploy configuration. 
 .deploy:
   image: briangweber/docker-node:carbon
@@ -39,6 +46,22 @@ before_script:
 
 #---Build and testing jobs---#
 
+# If project is a a java application, it must be built with maven
+maven-build:
+  extends: .java
+  image: maven:3.5.0-jdk-8-alpine
+  stage: build
+  only:
+    variables:
+      - $PLATFORM == "java"
+  script:
+    - 'mvn clean versions:set -DnewVersion=$PACKAGE_VERSION'
+    - 'mvn $MAVEN_CLI_OPTS package'
+  except:
+    - schedules
+  artifacts:
+    paths: [target]
+
 # If project is not a node app it will use this job configuration for build and testing 
 testNodeApplication:
   extends: .node
@@ -46,7 +69,10 @@ testNodeApplication:
   stage: build  
   only:
     variables:       
-      - $NODEPOSTGRESAPP == null  
+      - $NODEPOSTGRESAPP == null
+  except:
+    variables:
+      - $PLATFORM == "java"  
   script:
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
@@ -61,7 +87,7 @@ testNodeApplicationUsingPostgres:
   stage: build  
   only:
     variables:       
-      - $NODEPOSTGRESAPP == "true"  
+      - $NODEPOSTGRESAPP == "true"
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=dev migrate
@@ -132,6 +158,24 @@ publish:
     - schedules
 
 #---Migration and Deploy Jobs---
+
+# Sets up dev database for local testing
+migrate-postgres-dev:
+  extends: .migrate
+  stage: migrate-dev
+  only:
+    variables: 
+      - $DEV_POSTGRES_SERVER 
+  except:
+    - schedules
+  environment:
+    name: dev
+  variables:
+    POSTGRES_SERVER: $DEV_POSTGRES_SERVER
+    POSTGRES_USER: $DEV_POSTGRES_USER
+    POSTGRES_DB: $DEV_POSTGRES_DB
+    # Password should be set in your gitlab ci/cd settings 
+    POSTGRES_PASSWORD: $DEV_DB_PASSWORD
 
 # In database applicaitons/services preforms the migrations job required before deployment in int
 # triggers automatically after publish. 
