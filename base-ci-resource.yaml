@@ -11,15 +11,15 @@ stages:
 
 #---shared requirements of git lab ci jobs and stages---
 
-#base compoenets of postgres migration jobs 
+#base compoenets of postgres migration jobs
 .migrate:
   image: kevinrambaud/node-flyway:8-5.1.4-alpine
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=$CI_ENVIRONMENT_NAME migrate
 
-# base components of jobs that use node 
-.node: 
+# base components of jobs that use node
+.node:
   before_script:
     - export VERSION=${CI_COMMIT_SHA:0:7}
     - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
@@ -33,14 +33,14 @@ stages:
     - mkdir -p ~/.m2
     - echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><servers><server><username>${CT_ARTIFACTORY_USERNAME}</username><password>${CT_ARTIFACTORY_PASSWORD}</password><id>libs-release-local</id></server></servers></settings>" > ~/.m2/settings.xml
 
-#Base components for setting up a deploy configuration. 
+#Base components for setting up a deploy configuration.
 .deploy:
   image: briangweber/docker-node:carbon
   extends: .node
   script:
     - grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
 
-# Default before script 
+# Default before script
 before_script:
   - export VERSION=${CI_COMMIT_SHA:0:7}
 
@@ -62,17 +62,17 @@ maven-build:
   artifacts:
     paths: [target]
 
-# If project is not a node app it will use this job configuration for build and testing 
+# If project is not a node app it will use this job configuration for build and testing
 testNodeApplication:
   extends: .node
   image: briangweber/docker-node:carbon
-  stage: build  
+  stage: build
   only:
-    variables:       
+    variables:
       - $NODEPOSTGRESAPP == null
   except:
     variables:
-      - $PLATFORM == "java"  
+      - $PLATFORM == "java"
   script:
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
@@ -80,13 +80,13 @@ testNodeApplication:
     paths:
       - coverage/
 
-# if project is a node application using a postgres db this will be the build and test job 
+# if project is a node application using a postgres db this will be the build and test job
 testNodeApplicationUsingPostgres:
   extends: .node
   image: kevinrambaud/node-flyway:8-5.1.4-alpine
-  stage: build  
+  stage: build
   only:
-    variables:       
+    variables:
       - $NODEPOSTGRESAPP == "true"
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
@@ -122,17 +122,17 @@ analyze:
     variables:
       - $BUILD_ARTIFACT_BUCKET
 
-# for node applications will scan your dependencies for issues at build time. 
+# for node applications will scan your dependencies for issues at build time.
 dependency_scanning:
   extends: .node
   image: briangweber/docker-node:carbon
   stage: build
   only:
-    variables: 
+    variables:
       - $PLATFORM == "node"
   allow_failure: true
   services:
-    - docker:stable-dind
+    - docker:18-dind
   script:
     - export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
     - docker run
@@ -141,13 +141,13 @@ dependency_scanning:
         --volume /var/run/docker.sock:/var/run/docker.sock
         "registry.gitlab.com/gitlab-org/security-products/dependency-scanning:$SP_VERSION" /code
   artifacts:
-    paths: [gl-dependency-scanning-report.json]  
+    paths: [gl-dependency-scanning-report.json]
 
 #---Publish Jobs---
 
-# job used for publishing the service 
+# job used for publishing the service
 publish:
-  extends: .node 
+  extends: .node
   image: briangweber/docker-node:carbon
   stage: publish
   script:
@@ -164,8 +164,8 @@ migrate-postgres-dev:
   extends: .migrate
   stage: migrate-dev
   only:
-    variables: 
-      - $DEV_POSTGRES_SERVER 
+    variables:
+      - $DEV_POSTGRES_SERVER
   except:
     - schedules
   environment:
@@ -174,19 +174,19 @@ migrate-postgres-dev:
     POSTGRES_SERVER: $DEV_POSTGRES_SERVER
     POSTGRES_USER: $DEV_POSTGRES_USER
     POSTGRES_DB: $DEV_POSTGRES_DB
-    # Password should be set in your gitlab ci/cd settings 
+    # Password should be set in your gitlab ci/cd settings
     POSTGRES_PASSWORD: $DEV_DB_PASSWORD
 
 # In database applicaitons/services preforms the migrations job required before deployment in int
-# triggers automatically after publish. 
+# triggers automatically after publish.
 migrate-postgres-int:
   extends: .migrate
   stage: migrate-int
   only:
     refs:
       - master
-    variables: 
-      - $INT_POSTGRES_SERVER 
+    variables:
+      - $INT_POSTGRES_SERVER
   except:
     - schedules
   environment:
@@ -195,10 +195,10 @@ migrate-postgres-int:
     POSTGRES_SERVER: $INT_POSTGRES_SERVER
     POSTGRES_USER: $INT_POSTGRES_USER
     POSTGRES_DB: $INT_POSTGRES_DB
-    # Password should be set in your gitlab ci/cd settings 
+    # Password should be set in your gitlab ci/cd settings
     POSTGRES_PASSWORD: $INT_DB_PASSWORD
 
-# Deploys service to int autmatically after migrate-int stage completes sucessfully 
+# Deploys service to int autmatically after migrate-int stage completes sucessfully
 deploy-int:
   extends: .deploy
   stage: deploy-int
@@ -221,15 +221,15 @@ deploy-prd-gate:
     refs:
       - master
 
-# Job for deployment of node postgres service to production by first migrating the database 
+# Job for deployment of node postgres service to production by first migrating the database
 migrate-postgres-prd:
   extends: .migrate
   stage: migrate-prd
   only:
     refs:
       - master
-    variables: 
-      - $PRD_POSTGRES_SERVER 
+    variables:
+      - $PRD_POSTGRES_SERVER
   except:
     - schedules
   environment:
@@ -238,10 +238,10 @@ migrate-postgres-prd:
     POSTGRES_SERVER: $PRD_POSTGRES_SERVER
     POSTGRES_USER: $PRD_POSTGRES_USER
     POSTGRES_DB: $PRD_POSTGRES_DB
-    # Password should be set in your gitlab ci/cd settings 
+    # Password should be set in your gitlab ci/cd settings
     POSTGRES_PASSWORD: $PRD_DB_PASSWORD
 
-# Job for the deployment of node service to production 
+# Job for the deployment of node service to production
 deploy-prd:
   extends: .deploy
   stage: deploy-prd
