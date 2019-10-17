@@ -23,6 +23,12 @@ dependency_scanning:
   image: briangweber/docker-node:10
   stage: build
   allow_failure: true
+  variables:
+    # NOTE: Breaking change introduced in v11.11 of the runner, using this
+    # feature flag makes newest versions behave like versions prior v11.11
+    # https://gitlab.com/gitlab-org/gitlab-runner/issues/4306#note_177127898
+    # Orders' runner use v12.3.0 whereas FI' runner use v11.0.0
+    FF_USE_LEGACY_VOLUMES_MOUNTING_ORDER: "true"
   services:
     - docker:18-dind
   script:
