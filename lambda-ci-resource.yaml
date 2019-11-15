@@ -1,0 +1,32 @@
+include:
+  - https://raw.githubusercontent.com/Cimpress-MCP/gitlab-continuous-integration/master/base-ci-resource.yaml
+
+publish:
+  stage: publish
+  script:
+    - echo "No-op publish for lambda deploy"
+
+deploy-int:
+  extends: .deploy
+  stage: deploy-int
+  script:
+    - NODE_ENV=integration npx sls deploy --stage int
+  only:
+    refs:
+      - master
+  environment:
+    name: int
+
+deploy-prd:
+  extends: .deploy
+  stage: deploy-prd
+  script:
+    - NODE_ENV=production npx sls deploy --stage prd
+  only:
+    refs:
+      - master
+  except:
+    - schedules
+  environment:
+    name: prd
+  when: on_success
