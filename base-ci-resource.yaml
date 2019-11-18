@@ -74,7 +74,7 @@ testNodeApplication:
     variables:
       - $PLATFORM == "java"
   script:
-    - cat package.json | jq '.scripts.build'; if (($? == 0)); then npm run build fi;
+    - cat package.json | jq '.scripts.build'; if (($? == 0)); then npm run build; fi;
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
   artifacts:
@@ -93,7 +93,7 @@ testNodeApplicationUsingPostgres:
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=dev migrate
-    - cat package.json | jq '.scripts.build'; if (($? == 0)); then npm run build fi;
+    - cat package.json | jq '.scripts.build'; if (($? == 0)); then npm run build; fi;
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
   artifacts:
