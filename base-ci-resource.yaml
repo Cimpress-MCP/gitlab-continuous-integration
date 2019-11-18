@@ -62,7 +62,7 @@ maven-build:
   artifacts:
     paths: [target]
 
-# If project is a node app it will use this job configuration for build and testing
+# If project is not a node app it will use this job configuration for build and testing
 testNodeApplication:
   extends: .node
   image: briangweber/docker-node:carbon
@@ -70,11 +70,11 @@ testNodeApplication:
   only:
     variables:
       - $NODEPOSTGRESAPP == null
-      - $NODETYPESCRIPTAPP == null
   except:
     variables:
       - $PLATFORM == "java"
   script:
+    - $TYPESCRIPT && npm run build
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
   artifacts:
@@ -89,10 +89,10 @@ testNodeApplicationUsingPostgres:
   only:
     variables:
       - $NODEPOSTGRESAPP == "true"
-      - $NODETYPESCRIPTAPP == null
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=dev migrate
+    - $TYPESCRIPT && npm run build
     - npm test
   coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
   artifacts:
@@ -105,24 +105,6 @@ testNodeApplicationUsingPostgres:
     POSTGRES_USER: postgres
     POSTGRES_SERVER: postgres
     POSTGRES_PASSWORD: ''
-
-# If project is a node typescript app it will use this job configuration for build and testing
-testNodeTypescriptApplication:
-  extends: .node
-  image: briangweber/docker-node:carbon
-  stage: build
-  only:
-    variables:
-      - $NODEPOSTGRESAPP == null
-      - $NODETYPESCRIPTAPP == "true"
-  script:
-    - npm run build
-    - npm test
-  coverage: '/All files\s*\|\s*[.?\d]+\s*\|\s*([0-9.]+)/'
-  artifacts:
-    paths:
-      - coverage/
-      - dist/
 
 analyze:
   image: briangweber/docker-node:carbon
