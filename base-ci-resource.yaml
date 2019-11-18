@@ -80,6 +80,7 @@ testNodeApplication:
   artifacts:
     paths:
       - coverage/
+      - dist/
 
 # if project is a node application using a postgres db this will be the build and test job
 testNodeApplicationUsingPostgres:
@@ -98,6 +99,7 @@ testNodeApplicationUsingPostgres:
   artifacts:
     paths:
       - coverage/
+      - dist/
   services:
     - $POSTGRES_VERSION
   variables:
