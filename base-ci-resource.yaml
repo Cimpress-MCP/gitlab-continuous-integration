@@ -57,8 +57,9 @@ maven-build:
   script:
     - 'mvn clean versions:set -DnewVersion=$PACKAGE_VERSION'
     - 'mvn $MAVEN_CLI_OPTS package'
-  except:
-    - schedules
+  except:  
+    refs:
+      - schedules
   artifacts:
     paths: [target]
 
@@ -70,7 +71,9 @@ testNodeApplication:
   only:
     variables:
       - $NODEPOSTGRESAPP == null
-  except:
+  except:  
+    refs:
+      - schedules
     variables:
       - $PLATFORM == "java"
   script:
@@ -86,7 +89,10 @@ testNodeApplication:
 testNodeApplicationUsingPostgres:
   extends: .node
   image: kevinrambaud/node-flyway:8-5.1.4-alpine
-  stage: build
+  stage: build  
+  except:  
+    refs:
+      - schedules
   only:
     variables:
       - $NODEPOSTGRESAPP == "true"
@@ -164,8 +170,9 @@ publish:
     - grunt bundle --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
   only:
     - master
-  except:
-    - schedules
+  except:  
+    refs:
+      - schedules
 
 #---Migration and Deploy Jobs---
 
@@ -176,8 +183,9 @@ migrate-postgres-dev:
   only:
     variables:
       - $DEV_POSTGRES_SERVER
-  except:
-    - schedules
+  except:  
+    refs:
+      - schedules
   environment:
     name: dev
   variables:
@@ -197,8 +205,9 @@ migrate-postgres-int:
       - master
     variables:
       - $INT_POSTGRES_SERVER
-  except:
-    - schedules
+  except:  
+    refs:
+      - schedules
   environment:
     name: int
   variables:
@@ -211,7 +220,10 @@ migrate-postgres-int:
 # Deploys service to int autmatically after migrate-int stage completes sucessfully
 deploy-int:
   extends: .deploy
-  stage: deploy-int
+  stage: deploy-int  
+  except:  
+    refs:
+      - schedules
   only:
     refs:
       - master
@@ -226,7 +238,10 @@ deploy-prd-gate:
     name: prd
   allow_failure: false
   script:
-    - echo "beginning deployment"
+    - echo "beginning deployment"    
+  except:  
+    refs:
+      - schedules
   only:
     refs:
       - master
@@ -240,8 +255,9 @@ migrate-postgres-prd:
       - master
     variables:
       - $PRD_POSTGRES_SERVER
-  except:
-    - schedules
+  except:  
+    refs:
+      - schedules
   environment:
     name: prd
   variables:
@@ -258,8 +274,9 @@ deploy-prd:
   only:
     refs:
       - master
-  except:
-    - schedules
+  except:  
+    refs:
+      - schedules
   environment:
     name: prd
   when: on_success
