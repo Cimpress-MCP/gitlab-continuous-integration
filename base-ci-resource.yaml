@@ -13,7 +13,7 @@ stages:
 
 #base compoenets of postgres migration jobs
 .migrate:
-  image: kevinrambaud/node-flyway:8-5.1.4-alpine
+  image: kevinrambaud/node-flyway:10-5.2.4-alpine
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - sh /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=$CI_ENVIRONMENT_NAME migrate
@@ -35,7 +35,7 @@ stages:
 
 #Base components for setting up a deploy configuration.
 .deploy:
-  image: briangweber/docker-node:carbon
+  image: briangweber/docker-node:10
   extends: .node
   script:
     - grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
@@ -66,7 +66,7 @@ maven-build:
 # If project is not a node app it will use this job configuration for build and testing
 testNodeApplication:
   extends: .node
-  image: briangweber/docker-node:carbon
+  image: briangweber/docker-node:10
   stage: build
   only:
     variables:
@@ -88,7 +88,7 @@ testNodeApplication:
 # if project is a node application using a postgres db this will be the build and test job
 testNodeApplicationUsingPostgres:
   extends: .node
-  image: kevinrambaud/node-flyway:8-5.1.4-alpine
+  image: kevinrambaud/node-flyway:10-5.2.4-alpine
   stage: build  
   except:  
     refs:
@@ -115,7 +115,7 @@ testNodeApplicationUsingPostgres:
     POSTGRES_PASSWORD: ''
 
 analyze:
-  image: briangweber/docker-node:carbon
+  image: briangweber/docker-node:10
   extends: .node
   stage: build
   allow_failure: true
@@ -135,7 +135,7 @@ analyze:
 # for node applications will scan your dependencies for issues at build time.
 dependency_scanning:
   extends: .node
-  image: briangweber/docker-node:carbon
+  image: briangweber/docker-node:10
   stage: build
   only:
     variables:
@@ -164,7 +164,7 @@ dependency_scanning:
 # job used for publishing the service
 publish:
   extends: .node
-  image: briangweber/docker-node:carbon
+  image: briangweber/docker-node:10
   stage: publish
   script:
     - grunt bundle --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
