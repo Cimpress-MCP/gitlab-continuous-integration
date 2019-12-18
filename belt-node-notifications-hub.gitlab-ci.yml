@@ -1,0 +1,24 @@
+# modifications to the base-ci-resource GitLab CI file to insert Notifications Hub system tests between deployment to INT and PRD
+
+stages:
+  - build
+  - publish
+  - deploy-int
+  - system-tests
+  - deploy
+
+system-tests:
+  image:
+    name: byrnedo/alpine-curl:0.1.7
+    entrypoint: [""]
+  stage: system-tests
+  before_script: []
+  script:
+    - curl -X POST -F "token=$CI_JOB_TOKEN" -F ref=master https://cimpress.githost.io/api/v4/projects/2836/trigger/pipeline
+  only:
+    - master
+  except:
+    - schedules
+
+deploy-int:
+  stage: deploy-int
