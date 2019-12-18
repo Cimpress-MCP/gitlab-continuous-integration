@@ -13,7 +13,7 @@ stages:
 
 #base compoenets of postgres migration jobs
 .migrate:
-  image: kevinrambaud/node-flyway:10-5.2.4-alpine
+  image: cimpressorders/node-flyway:12-6.1.2-alpine
   script:
     - cp -r $CI_PROJECT_DIR/sql/* /flyway/sql/
     - bash /flyway/flyway -url=jdbc:postgresql://$POSTGRES_SERVER:5432/$POSTGRES_DB -schemas=public -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -placeholders.ENVIRONMENT=$CI_ENVIRONMENT_NAME migrate
@@ -88,7 +88,7 @@ testNodeApplication:
 # if project is a node application using a postgres db this will be the build and test job
 testNodeApplicationUsingPostgres:
   extends: .node
-  image: kevinrambaud/node-flyway:10-5.2.4-alpine
+  image: cimpressorders/node-flyway:12-6.1.2-alpine
   stage: build  
   except:  
     refs:
