@@ -51,3 +51,5 @@ publish:
     - npm publish
   only:
     - master
+  except:
+    - schedules
