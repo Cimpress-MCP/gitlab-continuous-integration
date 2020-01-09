@@ -22,7 +22,7 @@ build:
       - coverage/
 
 dependency_scanning:
-  image: briangweber/docker-node:12
+  image: cimpressorders/docker-node:12
   stage: build
   allow_failure: true
   variables:
@@ -44,7 +44,7 @@ dependency_scanning:
     paths: [gl-dependency-scanning-report.json]
 
 publish:
-  image: briangweber/docker-node:12
+  image: cimpressorders/docker-node:12
   stage: publish
   script:
     - grunt bundle --packageVersion=$VERSION --packageName=$CI_PROJECT_NAME
