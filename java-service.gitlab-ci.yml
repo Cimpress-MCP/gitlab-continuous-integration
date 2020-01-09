@@ -63,7 +63,7 @@ dependency_scanning:
     paths: [gl-dependency-scanning-report.json]
 
 push_bundle:
-  image: briangweber/docker-node:carbon
+  image: cimpressorders/docker-node:12
   stage: bundle
   only:
     - master
@@ -78,7 +78,7 @@ push_bundle:
     - 'grunt bundle --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
 .deploy_template: &deploy_definiton
-  image: briangweber/node:8
+  image: cimpressorders/docker-node:12
   only:
     - master
   except:
