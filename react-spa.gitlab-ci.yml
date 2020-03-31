@@ -90,6 +90,7 @@ deploy-rev:
   environment:
     name: review-$CI_COMMIT_REF_SLUG
     url: https://$DOMAIN_NAME/review/$CI_COMMIT_REF_SLUG/index.html
+    on_stop: stop-rev
   dependencies:
     - build-rev
   script:
@@ -130,3 +131,19 @@ deploy-prd:
   script:
     - aws s3 cp ./build s3://prd-$BUCKET_SUFFIX --recursive --exclude "index.html"
     - aws s3 cp ./build/index.html s3://prd-$BUCKET_SUFFIX --cache-control "max-age=0"
+
+# triggered either manually or when a branch is deleted
+stop-rev:
+  <<: *py-common
+  image: python:latest
+  environment:
+    name: review-$CI_COMMIT_REF_SLUG
+    action: stop
+  script:
+    - echo "Stop review"
+    - aws s3 rm $S3_DEST --recursive
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+    S3_DEST: s3://int-$BUCKET_SUFFIX/review/$CI_COMMIT_REF_SLUG/
+  when: manual
