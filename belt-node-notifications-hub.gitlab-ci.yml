@@ -14,7 +14,7 @@ system-tests:
   stage: system-tests
   before_script: []
   script:
-    - curl -X POST -F "token=$CI_JOB_TOKEN" -F ref=master https://cimpress.githost.io/api/v4/projects/2836/trigger/pipeline
+    - curl -X POST -F "token=$CI_JOB_TOKEN" -F ref=master https://gitlab.com/api/v4/projects/18344310/trigger/pipeline
   only:
     - master
   except:
