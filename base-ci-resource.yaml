@@ -24,7 +24,7 @@ stages:
     - export VERSION=${CI_COMMIT_SHA:0:7}
     - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
     - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-    - npm i -g grunt
+    - npm i -g grunt@1.1.0
     - npm ci
 
 # Base components of jobs that use java
