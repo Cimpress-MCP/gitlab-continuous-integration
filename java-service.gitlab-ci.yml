@@ -75,7 +75,7 @@ push_bundle:
   script:
     - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
     - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-    - npm i -g grunt
+    - npm i -g grunt@1.1.0
     - npm ci
     - 'grunt bundle --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
@@ -88,7 +88,7 @@ push_bundle:
   script:
     - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
     - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
-    - npm i -g grunt
+    - npm i -g grunt@1.1.0
     - npm ci
     - 'grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
 
