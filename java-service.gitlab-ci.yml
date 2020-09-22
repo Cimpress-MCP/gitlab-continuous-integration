@@ -1,3 +1,6 @@
+include:
+  - template: Dependency-Scanning.gitlab-ci.yml
+
 variables:
   # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -22,6 +25,8 @@ stages:
   - deploy
 
 before_script:
+  - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
+  - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
   - mkdir -p ~/.m2
   - echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><settings xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\" xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><servers><server><username>${CT_ARTIFACTORY_USERNAME}</username><password>${CT_ARTIFACTORY_PASSWORD}</password><id>libs-release-local</id></server></servers></settings>" > ~/.m2/settings.xml
   - export PACKAGE_VERSION=${CI_COMMIT_SHA:0:7}
@@ -38,31 +43,9 @@ maven_build:
     paths: [target]
 
 dependency_scanning:
-  image: docker:18
   stage: build
-  allow_failure: true
   variables:
-    # NOTE: Breaking change introduced in v11.11 of the runner, using this
-    # feature flag makes newest versions behave like versions prior v11.11
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/4306#note_177127898
-    # Orders' runner use v12.3.0 whereas FI' runner use v11.0.0
-    FF_USE_LEGACY_VOLUMES_MOUNTING_ORDER: "true"
-  services:
-    - docker:18.09.7-dind
-  script:
-    - export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
-    - cp ~/.m2/settings.xml .
-    - docker run
-        --env DEP_SCAN_DISABLE_REMOTE_CHECKS="${DEP_SCAN_DISABLE_REMOTE_CHECKS:-false}"
-        --env MAVEN_OPTS="${MAVEN_OPTS}"
-        --env MAVEN_CLI_OPTS="--settings settings.xml -DskipTests ${MAVEN_CLI_OPTS}"
-        --volume "$PWD:/code"
-        --volume /var/run/docker.sock:/var/run/docker.sock
-        "registry.gitlab.com/gitlab-org/security-products/dependency-scanning:$SP_VERSION" /code
-  artifacts:
-    paths: [gl-dependency-scanning-report.json]
-  tags:
-    - dind
+    DS_JAVA_VERSION: 8
 
 push_bundle:
   image: cimpressorders/docker-node:12
@@ -73,8 +56,6 @@ push_bundle:
     - schedules
   dependencies: [maven_build]
   script:
-    - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
-    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
     - npm i -g grunt@1.1.0
     - npm ci
     - 'grunt bundle --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
@@ -86,8 +67,6 @@ push_bundle:
   except:
     - schedules
   script:
-    - echo "@cimpress-technology:registry = https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" >> ~/.npmrc
-    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
     - npm i -g grunt@1.1.0
     - npm ci
     - 'grunt deploy --environment=$CI_ENVIRONMENT_NAME --packageVersion=$PACKAGE_VERSION --packageName=$CI_PROJECT_NAME'
