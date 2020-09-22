@@ -1,3 +1,6 @@
+include:
+  - template: Dependency-Scanning.gitlab-ci.yml
+
 variables:
   NODE_OPTIONS: "--max_old_space_size=4096"
   BUCKET_SUFFIX:
@@ -24,6 +27,11 @@ test:
   stage: test
   script:
     - npm run test
+
+dependency_scanning:
+  stage: test
+  before_script:
+    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> .npmrc
 
 build-rev:
   <<: *node-common

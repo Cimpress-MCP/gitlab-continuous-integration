@@ -1,3 +1,6 @@
+include:
+  - template: Dependency-Scanning.gitlab-ci.yml
+
 image: node:12
 
 before_script:
@@ -22,26 +25,10 @@ build:
       - coverage/
 
 dependency_scanning:
-  image: cimpressorders/docker-node:12
   stage: build
-  allow_failure: true
-  variables:
-    # NOTE: Breaking change introduced in v11.11 of the runner, using this
-    # feature flag makes newest versions behave like versions prior v11.11
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/4306#note_177127898
-    # Orders' runner use v12.3.0 whereas FI' runner use v11.0.0
-    FF_USE_LEGACY_VOLUMES_MOUNTING_ORDER: "true"
-  services:
-    - docker:18.09.7-dind
-  script:
-    - export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
-    - docker run
-        --env DEP_SCAN_DISABLE_REMOTE_CHECKS="${DEP_SCAN_DISABLE_REMOTE_CHECKS:-false}"
-        --volume "$PWD:/code"
-        --volume /var/run/docker.sock:/var/run/docker.sock
-        "registry.gitlab.com/gitlab-org/security-products/dependency-scanning:$SP_VERSION" /code
-  artifacts:
-    paths: [gl-dependency-scanning-report.json]
+  before_script:
+    - echo "@cimpress-technology:registry=https://artifactory.cimpress.io/artifactory/api/npm/npm-release-local/" > ~/.npmrc
+    - echo "//artifactory.cimpress.io/artifactory/api/npm/npm-release-local/:_authToken=${CT_ARTIFACTORY_NPM_TOKEN}" >> ~/.npmrc
 
 publish:
   image: cimpressorders/docker-node:12
